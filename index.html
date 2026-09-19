@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Editor de tablero — expediente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #e8ddc3; --paper-dark: #ddcfaf; --ink: #2a241c; --ink-soft: #5c5140;
+    --line: #35291b; --pin: #a1402c; --pin-dark: #7e2f20; --cell-on-bg: #f5eeda;
+    --confirm-color: #234a30; --tape: #d8c9a0; --shadow: rgba(40, 30, 10, 0.28);
+    --thin-px: 1.5; --thick-px: 5; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #211d16; --paper-dark: #2a2419; --ink: #ecdfc2; --ink-soft: #b3a583;
+      --line: #e2d3a8; --pin: #d3684f; --pin-dark: #a1402c; --cell-on-bg: #2d2719;
+      --confirm-color: #8fd9a8; --tape: #3a3222; --shadow: rgba(0,0,0,0.6); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #211d16; --paper-dark: #2a2419; --ink: #ecdfc2; --ink-soft: #b3a583;
+    --line: #e2d3a8; --pin: #d3684f; --pin-dark: #a1402c; --cell-on-bg: #2d2719;
+    --confirm-color: #8fd9a8; --tape: #3a3222; --shadow: rgba(0,0,0,0.6); color-scheme: dark;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; padding: 12px 14px 60px; display: flex; justify-content: center;
+  }
+  .sheet { width: 100%; max-width: 480px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 8px; background: var(--tape);
+    color: var(--ink-soft); font-family: 'Special Elite', 'Courier New', monospace;
