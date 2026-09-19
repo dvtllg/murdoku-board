@@ -36,3 +36,566 @@
   .tag {
     display: inline-flex; align-items: center; gap: 8px; background: var(--tape);
     color: var(--ink-soft); font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 0.02em; padding: 4px 10px; border-radius: 2px; transform: rotate(-1deg);
+  }
+  h1 { font-family: 'Special Elite', 'Courier New', monospace; font-weight: 400; font-size: 22px; line-height: 1.2; margin: 0; }
+  .topbar { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; height: 32px; margin: 0 0 10px; }
+  .sub { color: var(--ink-soft); font-size: 14px; line-height: 1.5; margin: 0 0 18px; max-width: 42ch; }
+  .panel {
+    background: var(--paper-dark); border: 1px solid var(--line); border-radius: 3px;
+    padding: 16px; margin-bottom: 18px; position: relative;
+  }
+  .panel::before {
+    content: ''; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--pin), var(--pin-dark)); box-shadow: 0 2px 4px var(--shadow);
+  }
+  .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; text-transform: lowercase; color: var(--ink-soft); letter-spacing: 0.02em; }
+  .field input[type=number] {
+    width: 64px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 2px;
+    background: var(--paper); color: var(--ink); font-size: 16px; font-family: inherit;
+  }
+  button {
+    font-family: inherit; font-size: 14px; border: 1px solid var(--line); border-radius: 2px;
+    padding: 9px 14px; background: var(--paper); color: var(--ink); cursor: pointer;
+  }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary { background: var(--pin); border-color: var(--pin-dark); color: #fbf3e2; }
+
+  .phase-indicator { font-family: 'Special Elite', 'Courier New', monospace; font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+  .phase-indicator strong { color: var(--ink); }
+
+  #board-wrap { display: none; }
+
+  #board-outer { position: relative; margin: 0 auto; border-radius: 2px; transition: box-shadow .3s ease; }
+  #board-outer.fixed-board {
+    box-shadow: 0 2px 0 rgba(0,0,0,0.04), 0 16px 32px -12px var(--shadow), 0 0 46px 14px color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+  #board { display: grid; position: relative; z-index: 1; }
+  #board-lines { position: absolute; top: 0; left: 0; z-index: 2; pointer-events: none; }
+  .cell { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  body.locked-shape .cell.off { pointer-events: none; }
+  .cell.paint-target { box-shadow: inset 0 0 0 2px var(--pin); }
+  .x-overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .confirm-glyph { font-weight: 800; color: var(--confirm-color); text-shadow: 0 0 1px color-mix(in srgb, var(--confirm-color) 40%, transparent); }
+  .notes-wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1px; padding: 2px; width: 100%; height: 100%; }
+  .notes-wrap span { font-weight: 600; color: var(--ink-soft); line-height: 1; }
+  .obj-char { font-weight: 700; opacity: 0.9; pointer-events: none; }
+  .char-input {
+    width: 52px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 2px;
+    background: var(--paper); color: var(--ink); font-size: 16px; font-family: inherit; text-align: center;
+  }
+
+  #toolbar { margin-top: 16px; }
+  .toolbar-block { margin-bottom: 10px; }
+  .toolbar-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .toolbar-label { font-size: 12px; color: var(--ink-soft); margin: 0 0 6px; }
+  .tool-btn.active { background: var(--pin); border-color: var(--pin-dark); color: #fbf3e2; }
+
+  .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .swatch-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--paper); cursor: pointer; padding: 0; box-shadow: 0 0 0 1px var(--line); }
+  .swatch-btn.selected { box-shadow: 0 0 0 1px var(--line), 0 0 0 3px var(--pin); }
+
+  .zone-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .zone-chip {
+    display: flex; align-items: center; gap: 6px; background: var(--paper-dark);
+    border: 1px solid var(--line); border-radius: 20px; padding: 4px 10px 4px 4px; font-size: 12.5px;
+  }
+  .zone-chip.active-painting { outline: 2px solid var(--pin); outline-offset: 1px; }
+  .zone-chip .zc-name { cursor: pointer; }
+  .zone-chip .zc-del { background: none; border: none; color: var(--ink-soft); font-size: 14px; padding: 0 2px; cursor: pointer; }
+  .zone-chip .swatch-btn { width: 20px; height: 20px; }
+
+  .status { font-size: 13px; color: var(--ink-soft); margin: 14px 0 4px; min-height: 18px; }
+  .status strong { color: var(--ink); font-weight: 600; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  footer { margin-top: 26px; font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(20, 15, 8, 0.55); display: none;
+    align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .modal-panel {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+    padding: 18px; width: 100%; max-width: 320px; box-shadow: 0 8px 24px var(--shadow);
+  }
+  .modal-title { font-size: 14px; margin: 0 0 12px; color: var(--ink); line-height: 1.4; }
+  .modal-panel input[type=text] {
+    width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 2px;
+    background: var(--paper-dark); color: var(--ink); font-size: 16px; margin-bottom: 12px; font-family: inherit;
+  }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="topbar">
+    <h1>Murdoku Board</h1>
+    <span class="phase-indicator" id="phase-indicator"></span>
+  </header>
+
+  <div class="panel" id="setup-panel">
+    <div class="row">
+      <div class="field"><label for="rows">filas</label><input type="number" id="rows" value="9" min="1" max="14"></div>
+      <div class="field"><label for="cols">columnas</label><input type="number" id="cols" value="9" min="1" max="14"></div>
+      <button class="btn-primary" id="create-btn">Crear tablero</button>
+    </div>
+  </div>
+
+  <div id="board-wrap">
+    <div id="board-outer">
+      <div id="board"></div>
+      <svg id="board-lines" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div id="toolbar"></div>
+
+    <p class="status" id="status"></p>
+    <div class="btn-row" id="nav-actions"></div>
+    <div class="btn-row"><button id="reset-btn">Reiniciar todo</button></div>
+  </div>
+
+  <footer id="footer-text">Toca una casilla para quitarla o devolverla mientras diseñas el contorno.</footer>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-panel">
+    <p class="modal-title" id="modal-title"></p>
+    <input type="text" id="modal-input" style="display:none">
+    <div class="modal-actions">
+      <button id="modal-clear" style="display:none">Borrar</button>
+      <button id="modal-cancel">Cancelar</button>
+      <button class="btn-primary" id="modal-ok">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const rowsInput = $('rows'), colsInput = $('cols'), createBtn = $('create-btn');
+  const setupPanel = $('setup-panel'), boardWrap = $('board-wrap');
+  const boardOuter = $('board-outer'), boardEl = $('board'), linesEl = $('board-lines');
+  const toolbarEl = $('toolbar'), navActions = $('nav-actions');
+  const statusEl = $('status'), footerText = $('footer-text');
+  const phaseIndicator = $('phase-indicator'), resetBtn = $('reset-btn');
+  const modalOverlay = $('modal-overlay'), modalTitle = $('modal-title'), modalInput = $('modal-input');
+  const modalOk = $('modal-ok'), modalCancel = $('modal-cancel'), modalClear = $('modal-clear');
+
+  // one shared palette, reused for zones, paint and X — no native color wheel anywhere
+  const PALETTE = ['#a1402c', '#c9a24b', '#5f8a72', '#4d6f8a', '#a15a8a', '#8a5a3c', '#6b6b4a', '#7a4f6b', '#4a7a6b', '#2a241c'];
+  const BASE_ZONE_COLOR = '#f5eeda';
+
+  let rows = 9, cols = 9;
+  let active = [], zoneGrid = [], freeColor = [], freeChar = [], fixedX = [], confirmed = [], notes = [];
+  let zoneColorOverrides = {};
+  let phase = 'contour';
+  let paintingZone = null, nextZoneId = 2, editingColorZone = null;
+  let paintColor = PALETTE[0], paintChar = '';
+  let gameTool = 'x', xColor = PALETTE[0];
+
+  function defaultZoneColor(id) { return id <= 1 ? BASE_ZONE_COLOR : PALETTE[(id - 1) % PALETTE.length]; }
+  function zoneColor(id) { return zoneColorOverrides[id] || defaultZoneColor(id); }
+
+  // low-contrast character color derived from the cell's own background
+  function hexToRgb(hex) {
+    hex = (hex || '#000000').replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+    const num = parseInt(hex, 16);
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+  }
+  function rgbToHex(r, g, b) { return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join(''); }
+  function lowContrastColor(bgHex) {
+    const { r, g, b } = hexToRgb(bgHex);
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const mix = lum > 0.55 ? 0 : 255; // dark ink on light bg, light ink on dark bg
+    const amount = 0.32;
+    return rgbToHex(
+      Math.round(r * (1 - amount) + mix * amount),
+      Math.round(g * (1 - amount) + mix * amount),
+      Math.round(b * (1 - amount) + mix * amount)
+    );
+  }
+
+  // ---------- reusable swatch row ----------
+  function buildSwatchRow(currentColor, onPick, palette) {
+    const row = document.createElement('div');
+    row.className = 'swatch-row';
+    (palette || PALETTE).forEach(color => {
+      const b = document.createElement('button');
+      b.className = 'swatch-btn' + (sameColor(color, currentColor) ? ' selected' : '');
+      b.style.background = color;
+      b.type = 'button';
+      b.addEventListener('click', e => { e.stopPropagation(); onPick(color); });
+      row.appendChild(b);
+    });
+    return row;
+  }
+  function sameColor(a, b) { return (a || '').toLowerCase() === (b || '').toLowerCase(); }
+
+  // ---------- modal ----------
+  let modalCb = null;
+  function openModal({ title, showInput = false, defaultVal = '', showClear = false }, cb) {
+    modalTitle.textContent = title;
+    modalInput.style.display = showInput ? 'block' : 'none';
+    modalInput.value = defaultVal;
+    modalClear.style.display = showClear ? 'inline-block' : 'none';
+    modalCb = cb;
+    modalOverlay.style.display = 'flex';
+    if (showInput) setTimeout(() => { modalInput.focus(); modalInput.select(); }, 30);
+  }
+  function closeModal() { modalOverlay.style.display = 'none'; modalCb = null; }
+  modalOk.addEventListener('click', () => { const v = modalInput.style.display !== 'none' ? modalInput.value : true; const cb = modalCb; closeModal(); if (cb) cb(v); });
+  modalCancel.addEventListener('click', () => { const cb = modalCb; closeModal(); if (cb) cb(null); });
+  modalClear.addEventListener('click', () => { const cb = modalCb; closeModal(); if (cb) cb(''); });
+  modalInput.addEventListener('keydown', e => { if (e.key === 'Enter') modalOk.click(); });
+  function openMessage(title) { modalCancel.style.display = 'none'; openModal({ title, showInput: false }, () => { modalCancel.style.display = 'inline-block'; }); }
+  function openConfirmYesNo(title, cb) { modalCancel.style.display = 'inline-block'; openModal({ title, showInput: false }, val => cb(val === true)); }
+  function openPromptText(title, defaultVal, cb) { modalCancel.style.display = 'inline-block'; openModal({ title, showInput: true, defaultVal, showClear: true }, cb); }
+
+  // ---------- state ----------
+  function emptyGrid(val) { return Array.from({ length: rows }, () => Array(cols).fill(val)); }
+
+  function saveState() {
+    try {
+      localStorage.setItem('murdoku-board-v5', JSON.stringify({
+        rows, cols, active, zoneGrid, freeColor, freeChar, fixedX, confirmed, notes,
+        zoneColorOverrides, phase, nextZoneId, paintColor, paintChar, xColor
+      }));
+    } catch (e) {}
+  }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem('murdoku-board-v5');
+      if (!raw) return false;
+      const s = JSON.parse(raw);
+      if (!s || !s.active) return false;
+      rows = s.rows; cols = s.cols; active = s.active; zoneGrid = s.zoneGrid;
+      freeColor = s.freeColor || emptyGrid(null); freeChar = s.freeChar || emptyGrid(null);
+      fixedX = s.fixedX || emptyGrid(null);
+      confirmed = s.confirmed || emptyGrid(null); notes = s.notes || emptyGrid(null);
+      zoneColorOverrides = s.zoneColorOverrides || {};
+      phase = s.phase || 'contour'; nextZoneId = s.nextZoneId || 2;
+      paintColor = s.paintColor || PALETTE[0]; paintChar = s.paintChar || '';
+      xColor = s.xColor || PALETTE[0];
+      rowsInput.value = rows; colsInput.value = cols;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function buildGrid() {
+    rows = Math.max(1, Math.min(14, parseInt(rowsInput.value) || 9));
+    cols = Math.max(1, Math.min(14, parseInt(colsInput.value) || 9));
+    active = Array.from({ length: rows }, () => Array(cols).fill(true));
+    zoneGrid = Array.from({ length: rows }, () => Array(cols).fill(1));
+    freeColor = emptyGrid(null); freeChar = emptyGrid(null); fixedX = emptyGrid(null); confirmed = emptyGrid(null); notes = emptyGrid(null);
+    zoneColorOverrides = {}; paintChar = '';
+    phase = 'contour'; paintingZone = null; nextZoneId = 2; editingColorZone = null;
+    boardWrap.style.display = 'block'; setupPanel.style.display = 'none';
+    render(); saveState();
+  }
+
+  function isActive(r, c) { return r >= 0 && r < rows && c >= 0 && c < cols && active[r][c]; }
+  function zoneAt(r, c) { return isActive(r, c) ? (zoneGrid[r][c] || 1) : null; }
+
+  // ---------- render ----------
+  function render() {
+    document.body.classList.toggle('locked-shape', phase !== 'contour');
+    boardOuter.classList.toggle('fixed-board', phase !== 'contour');
+
+    const availWidth = boardWrap.clientWidth || 340;
+    const cellPx = Math.max(16, Math.floor(availWidth / cols));
+    boardOuter.style.width = (cellPx * cols) + 'px';
+    boardOuter.style.height = (cellPx * rows) + 'px';
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, ${cellPx}px)`;
+    boardEl.style.gridTemplateRows = `repeat(${rows}, ${cellPx}px)`;
+    boardEl.innerHTML = '';
+
+    const confirmFont = Math.max(18, Math.round(cellPx * 0.78));
+    const notesFont = Math.max(8, Math.round(cellPx * 0.17));
+    const objCharFont = Math.max(14, Math.round(cellPx * 0.52));
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        const on = active[r][c];
+        cell.className = 'cell ' + (on ? 'on' : 'off');
+        if (on) {
+          const zid = zoneGrid[r][c] || 1;
+          const bg = freeColor[r][c] || zoneColor(zid);
+          cell.style.background = bg;
+          if (phase === 'zones' && paintingZone !== null && zid === paintingZone) cell.classList.add('paint-target');
+
+          if (phase === 'game' && fixedX[r][c]) {
+            cell.innerHTML = `<svg class="x-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="14" y1="14" x2="86" y2="86" stroke="${fixedX[r][c].color}" stroke-width="11" stroke-linecap="round"/>
+              <line x1="86" y1="14" x2="14" y2="86" stroke="${fixedX[r][c].color}" stroke-width="11" stroke-linecap="round"/>
+            </svg>`;
+          } else if (phase === 'game' && confirmed[r][c]) {
+            const g = document.createElement('span');
+            g.className = 'confirm-glyph';
+            g.style.fontSize = confirmFont + 'px';
+            g.textContent = confirmed[r][c];
+            cell.appendChild(g);
+          } else if (phase === 'game' && notes[r][c] && notes[r][c].length) {
+            const wrap = document.createElement('div');
+            wrap.className = 'notes-wrap';
+            wrap.style.fontSize = notesFont + 'px';
+            notes[r][c].forEach(n => { const s = document.createElement('span'); s.textContent = n; wrap.appendChild(s); });
+            cell.appendChild(wrap);
+          } else if (freeChar[r][c]) {
+            const g = document.createElement('span');
+            g.className = 'obj-char';
+            g.style.fontSize = objCharFont + 'px';
+            g.style.color = lowContrastColor(bg);
+            g.textContent = freeChar[r][c];
+            cell.appendChild(g);
+          }
+        } else {
+          cell.style.background = 'transparent';
+        }
+        cell.addEventListener('click', () => onCellClick(r, c));
+        boardEl.appendChild(cell);
+      }
+    }
+
+    drawLines(cellPx);
+    renderToolbarAndNav();
+    updateStatus();
+  }
+
+  function drawLines(cellPx) {
+    linesEl.setAttribute('width', cellPx * cols);
+    linesEl.setAttribute('height', cellPx * rows);
+    linesEl.setAttribute('viewBox', `0 0 ${cols} ${rows}`);
+    linesEl.setAttribute('preserveAspectRatio', 'none');
+    const mk = (x1, y1, x2, y2, thick) =>
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" vector-effect="non-scaling-stroke" style="stroke:var(--line)" stroke-width="${thick ? 'var(--thick-px)' : 'var(--thin-px)'}" stroke-linecap="square"/>`;
+    let thin = '', thick = '';
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (!active[r][c]) continue;
+        const topSame = zoneAt(r - 1, c) === zoneAt(r, c);
+        const leftSame = zoneAt(r, c - 1) === zoneAt(r, c);
+        topSame ? (thin += mk(c, r, c + 1, r, false)) : (thick += mk(c, r, c + 1, r, true));
+        leftSame ? (thin += mk(c, r, c, r + 1, false)) : (thick += mk(c, r, c, r + 1, true));
+        if (!isActive(r, c + 1)) thick += mk(c + 1, r, c + 1, r + 1, true);
+        if (!isActive(r + 1, c)) thick += mk(c, r + 1, c + 1, r + 1, true);
+      }
+    }
+    linesEl.innerHTML = thin + thick;
+  }
+
+  function onCellClick(r, c) {
+    if (phase === 'contour') {
+      active[r][c] = !active[r][c];
+      zoneGrid[r][c] = active[r][c] ? 1 : 0;
+    } else if (phase === 'zones') {
+      if (paintingZone === null || !active[r][c]) return;
+      zoneGrid[r][c] = (zoneGrid[r][c] === paintingZone) ? 1 : paintingZone;
+    } else if (phase === 'paint') {
+      if (!active[r][c]) return;
+      {
+        const sameColor = freeColor[r][c] === paintColor;
+        const sameChar = (freeChar[r][c] || '') === (paintChar || '');
+        if (sameColor && sameChar) { freeColor[r][c] = null; freeChar[r][c] = null; }
+        else { freeColor[r][c] = paintColor; freeChar[r][c] = paintChar ? paintChar : null; }
+      }
+    } else if (phase === 'game') {
+      if (!active[r][c]) return;
+      if (gameTool === 'x') {
+        if (fixedX[r][c]) fixedX[r][c] = null;
+        else { fixedX[r][c] = { color: xColor }; confirmed[r][c] = null; notes[r][c] = null; }
+        render(); saveState(); return;
+      } else if (gameTool === 'confirm') {
+        if (fixedX[r][c]) { openMessage('Esta casilla está bloqueada con X.'); return; }
+        openPromptText('Valor confirmado (1-2 caracteres)', confirmed[r][c] || '', val => {
+          if (val === null) return;
+          confirmed[r][c] = val.trim() ? val.trim().slice(0, 2) : null;
+          if (confirmed[r][c]) notes[r][c] = null;
+          render(); saveState();
+        });
+        return;
+      } else if (gameTool === 'notes') {
+        if (fixedX[r][c]) { openMessage('Esta casilla está bloqueada con X.'); return; }
+        openPromptText('Opciones separadas por espacio o coma', (notes[r][c] || []).join(' '), raw => {
+          if (raw === null) return;
+          const list = raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+          notes[r][c] = list.length ? list : null;
+          if (notes[r][c]) confirmed[r][c] = null;
+          render(); saveState();
+        });
+        return;
+      }
+    }
+    render(); saveState();
+  }
+
+  // ---------- toolbar (always below board) + nav ----------
+  function renderToolbarAndNav() {
+    toolbarEl.innerHTML = '';
+    navActions.innerHTML = '';
+
+    if (phase === 'contour') {
+      footerText.textContent = 'Toca una casilla para quitarla o devolverla.';
+      phaseIndicator.innerHTML = 'Fase 1 · <strong>Contorno</strong>';
+      navActions.appendChild(makeBtn('Fijar contorno', true, () => { phase = 'zones'; paintingZone = null; render(); saveState(); }));
+
+    } else if (phase === 'zones') {
+      footerText.textContent = paintingZone !== null ? 'Toca casillas para añadirlas o quitarlas de esta zona.' : 'Toca una zona de la lista para pintarla, o añade una nueva.';
+      phaseIndicator.innerHTML = 'Fase 2 · <strong>Zonas</strong>';
+
+      const chipsBlock = document.createElement('div'); chipsBlock.className = 'toolbar-block';
+      const chipsWrap = document.createElement('div'); chipsWrap.className = 'zone-chips';
+      const counts = {};
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (active[r][c]) { const z = zoneGrid[r][c] || 1; counts[z] = (counts[z] || 0) + 1; }
+      const ids = Object.keys(counts).map(Number).sort((a, b) => a - b);
+      if (!ids.includes(1)) ids.unshift(1);
+      ids.forEach(id => chipsWrap.appendChild(makeZoneChip(id, counts[id] || 0)));
+      chipsBlock.appendChild(chipsWrap);
+
+      if (editingColorZone !== null && ids.includes(editingColorZone)) {
+        const p = document.createElement('p'); p.className = 'toolbar-label';
+        p.textContent = `Color de ${editingColorZone === 1 ? 'zona 1' : 'zona ' + editingColorZone}:`;
+        chipsBlock.appendChild(p);
+        chipsBlock.appendChild(buildSwatchRow(zoneColor(editingColorZone), color => {
+          zoneColorOverrides[editingColorZone] = color; render(); saveState();
+        }, editingColorZone === 1 ? [BASE_ZONE_COLOR, ...PALETTE] : PALETTE));
+      }
+      toolbarEl.appendChild(chipsBlock);
+
+      const row = document.createElement('div'); row.className = 'toolbar-row';
+      if (paintingZone === null) row.appendChild(makeBtn('+ Añadir zona', false, () => { paintingZone = nextZoneId; nextZoneId += 1; editingColorZone = null; render(); saveState(); }));
+      else row.appendChild(makeBtn('Guardar zona', true, () => { paintingZone = null; render(); saveState(); }));
+      toolbarEl.appendChild(row);
+
+      navActions.appendChild(makeBtn('Editar contorno', false, () => { phase = 'contour'; render(); saveState(); }, paintingZone !== null));
+      navActions.appendChild(makeBtn('Continuar a pintado', true, () => { phase = 'paint'; editingColorZone = null; render(); saveState(); }, paintingZone !== null));
+
+    } else if (phase === 'paint') {
+      footerText.textContent = (paintChar ? `Toca una casilla para ponerle este color y la "${paintChar}". Tócala otra vez para quitarlo.` : 'Toca una casilla para pintarla. Tócala otra vez para quitarle ese color.');
+      phaseIndicator.innerHTML = 'Fase 3 · <strong>Pintado</strong>';
+
+      const block = document.createElement('div'); block.className = 'toolbar-block';
+      const row = document.createElement('div'); row.className = 'toolbar-row';
+      row.appendChild(buildSwatchRow(paintColor, color => { paintColor = color; render(); saveState(); }));
+      block.appendChild(row);
+      const charRow = document.createElement('div'); charRow.className = 'toolbar-row';
+      const charField = document.createElement('div'); charField.className = 'field';
+      const charLbl = document.createElement('label'); charLbl.textContent = 'carácter (opcional)';
+      const charInput = document.createElement('input'); charInput.type = 'text'; charInput.maxLength = 2;
+      charInput.className = 'char-input'; charInput.value = paintChar; charInput.placeholder = '—';
+      charInput.addEventListener('input', e => { paintChar = e.target.value.trim(); saveState(); });
+      charField.appendChild(charLbl); charField.appendChild(charInput);
+      charRow.appendChild(charField);
+      block.appendChild(charRow);
+      toolbarEl.appendChild(block);
+
+      navActions.appendChild(makeBtn('Editar zonas', false, () => { phase = 'zones'; render(); saveState(); }));
+      navActions.appendChild(makeBtn('Continuar al juego', true, () => { phase = 'game'; render(); saveState(); }));
+
+    } else if (phase === 'game') {
+      const toolHelp = { x: 'Toca una casilla para poner o quitar una X de bloqueo.', confirm: 'Toca una casilla para escribir su valor confirmado.', notes: 'Toca una casilla para anotar varias opciones pequeñas.' };
+      footerText.textContent = toolHelp[gameTool];
+      phaseIndicator.innerHTML = 'Fase 4 · <strong>Juego</strong>';
+
+      const toolRow = document.createElement('div'); toolRow.className = 'toolbar-row';
+      toolRow.appendChild(makeToolBtn('✕ Bloquear', 'x'));
+      toolRow.appendChild(makeToolBtn('Confirmar', 'confirm'));
+      toolRow.appendChild(makeToolBtn('Opciones', 'notes'));
+      const block = document.createElement('div'); block.className = 'toolbar-block';
+      block.appendChild(toolRow);
+      if (gameTool === 'x') {
+        const p = document.createElement('p'); p.className = 'toolbar-label'; p.textContent = 'Color de la X:';
+        block.appendChild(p);
+        block.appendChild(buildSwatchRow(xColor, color => { xColor = color; saveState(); render(); }));
+      }
+      toolbarEl.appendChild(block);
+
+      navActions.appendChild(makeBtn('Editar tablero', false, () => { phase = 'paint'; render(); saveState(); }));
+    }
+  }
+
+  function makeBtn(label, primary, onClick, disabled) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    if (primary) b.className = 'btn-primary';
+    if (disabled) b.disabled = true;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function makeToolBtn(label, tool) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.className = 'tool-btn' + (gameTool === tool ? ' active' : '');
+    b.addEventListener('click', () => { gameTool = tool; render(); saveState(); });
+    return b;
+  }
+
+  function makeZoneChip(id, count) {
+    const chip = document.createElement('div');
+    chip.className = 'zone-chip' + (paintingZone === id ? ' active-painting' : '');
+    const swatch = document.createElement('button');
+    swatch.type = 'button';
+    swatch.className = 'swatch-btn';
+    swatch.style.background = zoneColor(id);
+    swatch.addEventListener('click', e => { e.stopPropagation(); editingColorZone = (editingColorZone === id) ? null : id; render(); });
+    const label = document.createElement('span');
+    label.className = 'zc-name';
+    label.textContent = (id === 1 ? 'Zona 1' : `Zona ${id}`) + ` · ${count}`;
+    label.addEventListener('click', () => { paintingZone = (paintingZone === id) ? null : id; editingColorZone = null; render(); });
+    chip.appendChild(swatch);
+    chip.appendChild(label);
+    if (id !== 1) {
+      const del = document.createElement('button');
+      del.className = 'zc-del'; del.type = 'button'; del.textContent = '✕'; del.title = 'Eliminar zona';
+      del.addEventListener('click', e => {
+        e.stopPropagation();
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (zoneGrid[r][c] === id) zoneGrid[r][c] = 1;
+        if (paintingZone === id) paintingZone = null;
+        if (editingColorZone === id) editingColorZone = null;
+        delete zoneColorOverrides[id];
+        render(); saveState();
+      });
+      chip.appendChild(del);
+    }
+    return chip;
+  }
+
+  function updateStatus() {
+    const count = active.flat().filter(Boolean).length;
+    if (phase === 'contour') statusEl.innerHTML = `<strong>${count}</strong> casillas activas de ${rows * cols}.`;
+    else if (phase === 'zones') { const zc = new Set(zoneGrid.flat().filter(z => z && z > 0)).size; statusEl.innerHTML = `<strong>${count}</strong> casillas, <strong>${zc}</strong> zona(s).`; }
+    else if (phase === 'paint') { const pc = freeColor.flat().filter(Boolean).length; statusEl.innerHTML = `<strong>${pc}</strong> casillas pintadas.`; }
+    else if (phase === 'game') {
+      const bx = fixedX.flat().filter(Boolean).length, cf = confirmed.flat().filter(Boolean).length, nt = notes.flat().filter(Boolean).length;
+      statusEl.innerHTML = `<strong>${bx}</strong> bloqueadas, <strong>${cf}</strong> confirmadas, <strong>${nt}</strong> con opciones.`;
+    }
+  }
+
+  createBtn.addEventListener('click', buildGrid);
+  resetBtn.addEventListener('click', () => {
+    openConfirmYesNo('¿Reiniciar y perder el tablero actual?', ok => {
+      if (!ok) return;
+      try { localStorage.removeItem('murdoku-board-v5'); } catch (e) {}
+      boardWrap.style.display = 'none'; setupPanel.style.display = 'block';
+      rowsInput.value = 9; colsInput.value = 9;
+    });
+  });
+
+  if (loadState()) { boardWrap.style.display = 'block'; setupPanel.style.display = 'none'; render(); }
+
+  let lastW = window.innerWidth;
+  window.addEventListener('resize', () => {
+    if (window.innerWidth === lastW) return; // keyboard open/close only changes height: don't rebuild the toolbar
+    lastW = window.innerWidth;
+    if (active.length) render();
+  });
+})();
+</script>
+</body>
+</html>
